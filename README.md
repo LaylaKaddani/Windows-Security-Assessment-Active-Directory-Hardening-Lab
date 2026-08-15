@@ -1,5 +1,3 @@
-# Windows-Security-Assessment-Active-Directory-Hardening-Lab
-
 # Windows Security Assessment & Active Directory Hardening Lab
 
 Laboratoire pratique consacré à l’audit et à la sécurisation d’un environnement Windows Server avec Active Directory.
