@@ -1,4 +1,4 @@
-# Active Directory Security & Windows Server Hardening Lab
+# Windows Security Assessment, Active Directory & Hardening Lab
 
 ## Présentation
 
