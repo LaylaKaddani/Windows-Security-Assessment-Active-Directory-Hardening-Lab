@@ -1,32 +1,38 @@
-# Windows Security Assessment, Active Directory & Hardening Lab
+# Windows Security Assessment & Active Directory Hardening Lab
 
 ## Présentation
 
 Ce projet consiste en la construction, la configuration, la sécurisation et la supervision d'un environnement Windows Server basé sur Active Directory.
 
-L'objectif est de reproduire dans un environnement de laboratoire contrôlé plusieurs activités rencontrées en cybersécurité des systèmes Windows : administration sécurisée, IAM, gestion des privilèges, hardening, sécurité réseau, analyse des journaux, détection et automatisation PowerShell.
+Le projet a été réalisé progressivement dans un environnement de laboratoire isolé. L'objectif n'était pas uniquement d'observer une infrastructure existante, mais de construire et configurer les composants, de mettre en place des mécanismes de sécurité, de tester leur fonctionnement, puis d'ajouter des contrôles de journalisation, de détection et d'automatisation.
 
 La démarche suivie est :
 
 **Build → Configure → Secure → Harden → Validate → Monitor → Detect → Automate**
 
-Ce Lab met particulièrement l'accent sur les compétences directement pertinentes pour des missions de cybersécurité junior, notamment :
+Le projet couvre notamment :
 
 - Windows Server Security
 - Active Directory Security
 - IAM et gestion des privilèges
+- Group Policy
+- Password Policy et Account Lockout
 - Windows Server Hardening
-- Network Security
-- Security Monitoring
-- Log Analysis
+- SMB Security
+- Windows Defender Firewall
+- Remote Administration Security
+- Security Logging
+- Authentication Monitoring
 - Detection Engineering
-- PowerShell Automation
+- PowerShell Security Automation
+
+> Ce dépôt concerne uniquement le laboratoire personnel. Les travaux réalisés dans le cadre du stage chez Alpamare, notamment Nmap, Nessus et PingCastle, sont conservés séparément.
 
 ---
 
 ## 1. Lab Environment
 
-### Domaine Active Directory
+### Domaine
 
 ```text
 Domain: cyberlab.local
@@ -34,7 +40,7 @@ Domain Controller: DC01
 Client: CLIENT01
 ```
 
-### Architecture
+### Architecture générale
 
 ```text
                          cyberlab.local
@@ -49,148 +55,210 @@ Client: CLIENT01
                          +--------------+
                          |   CLIENT01   |
                          |   Windows    |
-                         |    Client   |
+                         |    Client    |
                          +--------------+
 ```
 
-### Technologies utilisées
-
-- Windows Server
-- Active Directory Domain Services (AD DS)
-- Active Directory
-- DNS
-- Windows Defender Firewall
-- SMB
-- WinRM
-- Windows Event Log
-- PowerShell
-- Group Policy / Windows security configuration
+Le laboratoire a été construit comme un environnement Windows/Active Directory permettant de pratiquer l'administration, la configuration de sécurité, le hardening, la validation et le monitoring.
 
 ---
 
-## 2. Active Directory Configuration
+## 2. Active Directory Deployment & Configuration
 
-Une partie importante du Lab a consisté à construire et configurer l'environnement Active Directory avant d'effectuer les contrôles de sécurité.
+Le domaine Active Directory `cyberlab.local` a été configuré autour du Domain Controller `DC01`.
 
-Les travaux réalisés comprennent :
+Cette phase a permis de mettre en place :
 
-- configuration du domaine Active Directory ;
-- création et organisation des comptes utilisateurs ;
-- création et utilisation de groupes de sécurité ;
-- organisation des objets dans Active Directory ;
-- mise en place d'une séparation entre utilisateurs standards et comptes disposant de privilèges ;
-- vérification des appartenances aux groupes ;
-- contrôle des privilèges effectivement accordés aux utilisateurs.
+- Active Directory Domain Services ;
+- DNS associé au domaine ;
+- utilisateurs ;
+- groupes de sécurité ;
+- Organizational Units (OU) ;
+- Group Policy Objects (GPO) ;
+- organisation des ressources par fonction ;
+- gestion des privilèges et des accès.
 
-### Exemple de gestion des privilèges
+### Organizational Units
 
-Le compte `Thomas.Martin` appartient au groupe :
+L'environnement Active Directory a été organisé avec plusieurs OU dédiées, notamment :
 
 ```text
+Comptabilité
+Direction
+Domain Controllers
+Groupes
+IT
+Postes
+RH
+Serveurs
+Utilisateurs
+```
+
+Cette organisation permet de séparer les objets selon leur rôle et de faciliter l'application ciblée des politiques de sécurité.
+
+![Active Directory Organizational Units](screenshots/01_ActiveDirectory_OUs.png)
+
+---
+
+## 3. Group Policy & Security Policies
+
+Les Group Policy Objects ont été utilisés pour mettre en place les politiques de sécurité du domaine.
+
+Parmi les GPO configurées et liées au domaine :
+
+```text
+Politique de mots de passe et verrouillage des comptes
+Default Domain Policy
+Politique de sécurité des postes clients
+```
+
+Les GPO étaient activées et leurs liens vers le domaine étaient actifs.
+
+Cette partie du Lab a permis de travailler sur :
+
+- Password Policy ;
+- Account Lockout Policy ;
+- Security Policy des postes clients ;
+- gestion centralisée des paramètres de sécurité ;
+- application des politiques au niveau du domaine.
+
+![Group Policy Configuration](screenshots/02_Group_Policy_Configuration.png)
+
+### Password Policy & Account Lockout
+
+Une GPO dédiée a été créée pour centraliser les paramètres liés aux mots de passe et au verrouillage des comptes.
+
+Cette politique permet de travailler sur des contrôles tels que :
+
+- complexité des mots de passe ;
+- durée et renouvellement ;
+- historique des mots de passe ;
+- seuil de verrouillage ;
+- durée de verrouillage ;
+- réinitialisation du compteur de verrouillage.
+
+Les valeurs exactes configurées dans la GPO doivent être documentées dans la capture de la stratégie réellement appliquée.
+
+![Password Policy and Account Lockout Policy](screenshots/03_Password_Account_Lockout_Policy.png)
+
+---
+
+## 4. Identity & Access Management
+
+Une partie importante du Lab concerne la gestion des identités et des accès.
+
+Des groupes distincts ont été utilisés pour séparer les rôles :
+
+```text
+GG_IT
+GG_IT_Admins
+GG_Direction
+```
+
+Les utilisateurs ont ensuite été associés aux groupes correspondant à leurs responsabilités.
+
+### Exemple : compte privilégié
+
+Le compte `Thomas.Martin` appartient notamment à :
+
+```text
+Domain Users
+GG_IT
 GG_IT_Admins
 ```
 
-La vérification PowerShell a permis de confirmer :
+Le compte dispose ainsi d'un rôle d'administration technique dans le Lab.
 
-```text
-GG_IT_Admins
-    └── Thomas Martin
-```
-
-et les appartenances du compte :
-
-```text
-Thomas.Martin
-    ├── Domain Users
-    ├── GG_IT
-    └── GG_IT_Admins
-```
-
-Le compte `Nicolas.Moreau` possède quant à lui :
-
-```text
-Nicolas.Moreau
-    ├── Domain Users
-    └── GG_Direction
-```
-
-Cette étape a permis de vérifier concrètement les relations entre utilisateurs, groupes et privilèges dans Active Directory.
-
-### Commandes utilisées
-
-```powershell
-Get-ADGroupMember "GG_IT_Admins" |
-Select-Object Name, SamAccountName
-```
+Vérification :
 
 ```powershell
 Get-ADPrincipalGroupMembership "Thomas.Martin" |
 Select-Object Name
 ```
 
+### Exemple : compte Direction
+
+Le compte `Nicolas.Moreau` appartient à :
+
+```text
+Domain Users
+GG_Direction
+```
+
+Vérification :
+
 ```powershell
 Get-ADPrincipalGroupMembership "Nicolas.Moreau" |
 Select-Object Name
 ```
 
-### Capture
+### Groupe privilégié
 
-![Active Directory Groups](screenshots/01_ActiveDirectory_Groups.png)
+Le contenu du groupe `GG_IT_Admins` a été vérifié :
 
-Insérer ici une capture montrant les groupes et les appartenances vérifiées avec PowerShell.
+```powershell
+Get-ADGroupMember "GG_IT_Admins" |
+Select-Object Name, SamAccountName
+```
 
----
+Résultat obtenu :
 
-## 3. IAM and Privileged Access Review
+```text
+Thomas Martin    Thomas.Martin
+```
 
-Le Lab a ensuite permis de travailler sur les principes fondamentaux de l'IAM :
-
-- identification des utilisateurs ;
-- appartenance aux groupes ;
-- gestion des privilèges ;
-- distinction entre utilisateurs standards et utilisateurs privilégiés ;
-- vérification des accès effectifs ;
-- contrôle des groupes à privilèges.
-
-L'objectif n'était pas uniquement d'observer la configuration : les comptes et groupes ont été configurés dans le Lab, puis leur niveau de privilège a été vérifié.
-
-Cette démarche permet de reproduire une partie du travail réalisé dans des activités de :
-
-- IAM
-- Access Management
-- Identity Security
-- Active Directory Security
-- Privileged Access Management
+![Privileged Active Directory Groups](screenshots/04_ActiveDirectory_Privileged_Groups.png)
 
 ---
 
-## 4. Windows Server Hardening
+## 5. Access Control & Separation of Duties
 
-Une phase importante du projet a été consacrée au durcissement du serveur.
+Le Lab comprend un scénario de **Separation of Duties (SoD)** afin de séparer une fonction technique d'une fonction de validation.
 
-Le hardening a été réalisé avant les phases de validation et de monitoring afin de pouvoir vérifier ensuite que les mesures de sécurité étaient effectivement appliquées.
+Le principe est :
 
-Les contrôles réalisés portent notamment sur :
+```text
+Technical execution
+        ≠
+Business approval
+```
 
-- services Windows ;
-- Windows Defender Firewall ;
-- SMB ;
-- SMB signing ;
-- protocoles réseau ;
-- services d'administration distante ;
-- Print Spooler ;
-- règles de pare-feu ;
-- surfaces d'exposition réseau.
+Thomas Martin représente le rôle technique avec des privilèges IT.
 
-L'objectif était d'appliquer des mesures de sécurité pertinentes pour un serveur Windows tout en conservant les fonctionnalités nécessaires au fonctionnement d'Active Directory.
+Nicolas Moreau représente le rôle de Direction et ne possède pas les privilèges d'administration IT.
+
+Un scénario de demande de changement a été utilisé pour représenter le processus :
+
+```text
+Thomas
+   |
+   | Change Request
+   v
+Validation
+   |
+   v
+Nicolas / Direction
+```
+
+Le Lab a également permis de tester la séparation d'accès à une ressource SMB dédiée au scénario SoD.
+
+Cette partie permet de travailler sur :
+
+- Separation of Duties ;
+- Least Privilege ;
+- Privileged Access ;
+- validation des opérations sensibles ;
+- contrôle des accès aux ressources.
+
+![Separation of Duties](screenshots/05_Separation_of_Duties.png)
 
 ---
 
-## 5. SMB Security
+## 6. SMB Security
 
-Le protocole SMB a été étudié et sécurisé dans le cadre du hardening.
+Le protocole SMB a été sécurisé et vérifié dans le cadre du hardening.
 
-### Configuration vérifiée
+La configuration a été contrôlée avec :
 
 ```powershell
 Get-SmbServerConfiguration |
@@ -200,7 +268,7 @@ Select-Object EnableSMB1Protocol,
               RequireSecuritySignature
 ```
 
-Résultat obtenu :
+Résultat :
 
 ```text
 EnableSMB1Protocol        False
@@ -209,24 +277,22 @@ EnableSecuritySignature   True
 RequireSecuritySignature  True
 ```
 
-Cette configuration montre notamment :
+Les mesures appliquées permettent de :
 
-- SMBv1 désactivé ;
-- SMBv2 activé ;
-- SMB signing activé ;
-- SMB signing requis.
+- désactiver SMBv1 ;
+- conserver SMBv2/SMB3 ;
+- activer SMB Signing ;
+- rendre SMB Signing obligatoire.
 
-Le SMB signing permet d'améliorer l'intégrité des communications SMB en empêchant notamment qu'un attaquant puisse modifier silencieusement certains échanges.
-
-### Capture
-
-![SMB Security Configuration](screenshots/02_SMB_Security_Configuration.png)
+![SMB Security Configuration](screenshots/06_SMB_Security_Configuration.png)
 
 ---
 
-## 6. Windows Defender Firewall
+## 7. Windows Defender Firewall
 
-Les profils Windows Defender Firewall ont été vérifiés :
+Windows Defender Firewall a été configuré et vérifié comme composant majeur de la sécurité réseau du serveur.
+
+Les profils ont été contrôlés :
 
 ```powershell
 Get-NetFirewallProfile |
@@ -236,7 +302,7 @@ Select-Object Name,
               DefaultOutboundAction
 ```
 
-Les trois profils suivants étaient actifs :
+Les profils suivants ont été vérifiés :
 
 ```text
 Domain
@@ -244,33 +310,27 @@ Private
 Public
 ```
 
-Les règles entrantes autorisées ont ensuite été étudiées afin d'identifier les services accessibles et les surfaces réseau exposées.
+Les règles entrantes autorisées ont ensuite été étudiées afin d'identifier les services accessibles.
 
-### Analyse des règles
+Une attention particulière a été portée aux règles liées à :
 
-Une attention particulière a été portée aux règles concernant :
-
-- SMB / File and Printer Sharing ;
-- WMI ;
-- RPC ;
 - Active Directory ;
 - DNS ;
 - Kerberos ;
+- SMB ;
+- RPC ;
+- WMI ;
 - WinRM ;
 - DFS ;
-- services de gestion distante.
+- File and Printer Sharing.
 
-Cette analyse permet de relier la configuration du firewall aux rôles réellement assurés par le serveur.
-
-### Capture
-
-![Windows Defender Firewall](screenshots/03_Windows_Defender_Firewall.png)
+![Windows Defender Firewall](screenshots/07_Windows_Defender_Firewall.png)
 
 ---
 
-## 7. Windows Services Review
+## 8. Windows Services Hardening
 
-Les services Windows en fonctionnement ont été recensés afin d'identifier les composants actifs sur le serveur.
+Les services Windows ont été recensés puis étudiés afin d'identifier les composants réellement nécessaires au fonctionnement du serveur.
 
 Commande utilisée :
 
@@ -283,7 +343,7 @@ Sort-Object DisplayName |
 Select-Object DisplayName, Name, StartType
 ```
 
-Cette étape a notamment permis d'identifier les composants liés à :
+Une attention particulière a été portée à :
 
 - Active Directory Domain Services ;
 - DNS ;
@@ -291,24 +351,22 @@ Cette étape a notamment permis d'identifier les composants liés à :
 - Netlogon ;
 - RPC ;
 - SMB ;
-- Windows Defender ;
 - Windows Event Log ;
+- Windows Defender ;
 - WinRM ;
 - Print Spooler ;
 - DFS ;
 - WMI.
 
-Le principe appliqué est de comparer les services actifs avec les fonctions réellement nécessaires au serveur, afin de réduire autant que possible la surface d'attaque sans casser les dépendances d'Active Directory.
+L'approche retenue consiste à ne pas désactiver un service uniquement parce qu'il est actif : son rôle et ses dépendances doivent d'abord être compris.
 
-### Capture
-
-![Windows Services Review](screenshots/04_Windows_Services_Review.png)
+![Security Relevant Windows Services](screenshots/08_Windows_Services_Review.png)
 
 ---
 
-## 8. Print Spooler Security Review
+## 9. Print Spooler Review
 
-Le service Print Spooler a été vérifié :
+Le service Print Spooler a été contrôlé :
 
 ```powershell
 Get-Service Spooler |
@@ -322,71 +380,55 @@ Name      Status   StartType
 Spooler   Running  Automatic
 ```
 
-Les imprimantes présentes sur le serveur ont également été contrôlées :
+Les imprimantes présentes ont également été vérifiées :
 
 ```powershell
 Get-Printer |
-Select-Object Name,
-              Shared,
-              Published
+Select-Object Name, Shared, Published
 ```
 
-Résultat :
+Les imprimantes présentes dans le Lab n'étaient pas partagées ou publiées.
 
-```text
-Microsoft XPS Document Writer
-Microsoft Print to PDF
-```
+Le service a donc été identifié comme un élément de surface d'attaque à évaluer, sans désactivation aveugle.
 
-Aucune de ces imprimantes n'était partagée ou publiée.
-
-Cette vérification permet de distinguer la présence du service de l'existence effective de ressources d'impression partagées.
-
-### Capture
-
-![Print Spooler Review](screenshots/05_Print_Spooler_Review.png)
+![Print Spooler Review](screenshots/09_Print_Spooler_Review.png)
 
 ---
 
-## 9. WinRM Security Review
+## 10. WinRM & Remote Administration Security
 
-WinRM a également été étudié car il constitue un mécanisme important d'administration distante Windows.
+WinRM a été analysé comme mécanisme d'administration distante Windows.
 
-Le service a été vérifié :
+Vérification du service :
 
 ```powershell
 Get-Service WinRM |
 Select-Object Name, Status, StartType
 ```
 
-Résultat :
+Le service était :
 
 ```text
-Name   Status   StartType
-WinRM  Running  Automatic
+Running
+Automatic
 ```
 
-Le serveur WinRM écoute sur le port :
-
-```text
-5985/TCP
-```
-
-La présence du listener a été vérifiée avec :
+La configuration du listener a été vérifiée :
 
 ```powershell
 winrm enumerate winrm/config/listener
 ```
 
-Configuration observée :
+Le Lab présentait notamment :
 
 ```text
 Transport = HTTP
-Port      = 5985
-Enabled   = true
+Port = 5985
+Enabled = true
+Address = *
 ```
 
-Le port a également été vérifié au niveau réseau :
+L'écoute réseau réelle a ensuite été vérifiée :
 
 ```powershell
 Get-NetTCPConnection -LocalPort 5985 -State Listen |
@@ -396,54 +438,31 @@ Select-Object LocalAddress, LocalPort, State, OwningProcess
 Résultat :
 
 ```text
-LocalAddress  LocalPort  State   OwningProcess
-::            5985       Listen  4
+LocalAddress = ::
+LocalPort    = 5985
+State        = Listen
 ```
 
-Le processus associé était :
+Le processus propriétaire était le processus système Windows.
 
-```text
-System
-```
-
-### Firewall WinRM
-
-Les règles associées ont été contrôlées :
+Les règles Firewall liées à WinRM ont également été contrôlées :
 
 ```powershell
-Get-NetFirewallRule -DisplayName "*Windows Remote Management (HTTP-In)*" |
+Get-NetFirewallRule -DisplayName "*Windows Remote Management (HTTP-In)" |
 Select-Object DisplayName, Enabled, Profile, Direction, Action
 ```
 
-Le port associé a été confirmé :
+Les adresses distantes autorisées ont été vérifiées afin d'identifier le niveau d'exposition du service.
 
-```text
-TCP 5985
-```
-
-Les adresses distantes autorisées par les règles ont également été vérifiées.
-
-Cette phase a permis d'identifier précisément :
-
-- le service ;
-- le port ;
-- le listener ;
-- le processus ;
-- les règles Firewall ;
-- les profils concernés ;
-- la surface d'administration distante exposée.
-
-### Capture
-
-![WinRM Security Review](screenshots/06_WinRM_Security_Review.png)
+![WinRM Security Review](screenshots/10_WinRM_Security_Review.png)
 
 ---
 
-## 10. Security Event Logging
+## 11. Security Logging
 
-Après la configuration et le hardening, le Lab a été étendu avec une partie dédiée au monitoring et à l'analyse des événements de sécurité.
+Une partie dédiée au Security Monitoring a été mise en place.
 
-Un répertoire dédié a été créé :
+Un répertoire de travail a été créé :
 
 ```powershell
 New-Item -ItemType Directory `
@@ -451,11 +470,15 @@ New-Item -ItemType Directory `
 -Force
 ```
 
-Les événements Windows Security correspondant à l'Event ID `4625` ont ensuite été collectés.
+Les événements Windows Security correspondant à l'Event ID `4625` ont été collectés.
 
-L'Event ID 4625 correspond à un échec d'ouverture de session.
+Le fichier brut a été créé :
 
-### Export initial
+```text
+C:\CyberLab\SecurityLogs\FailedLogons.csv
+```
+
+Export réalisé :
 
 ```powershell
 Get-WinEvent -FilterHashtable @{
@@ -467,118 +490,100 @@ Export-Csv "C:\CyberLab\SecurityLogs\FailedLogons.csv" `
 -Encoding UTF8
 ```
 
-Le fichier généré a été vérifié :
-
-```text
-C:\CyberLab\SecurityLogs\FailedLogons.csv
-```
-
-### Capture
-
-![Security Event ID 4625](screenshots/07_Security_Events_4625.png)
-
 ---
 
-## 11. Security Event Analysis with PowerShell
+## 12. Event ID 4625 Analysis
 
-Une analyse plus structurée des événements `4625` a ensuite été développée.
+Les événements `4625` ont ensuite été parsés afin d'extraire les informations importantes de `EventData`.
 
-Les informations extraites comprennent notamment :
+Les champs structurés comprennent :
 
-- date et heure ;
-- utilisateur ;
-- domaine ;
-- Logon Type ;
-- adresse IP source ;
-- workstation ;
-- status ;
-- substatus ;
-- processus.
+```text
+Time
+User
+Domain
+LogonType
+SourceIP
+Workstation
+Status
+SubStatus
+Process
+```
 
-Le parsing XML de l'événement permet d'extraire les champs présents dans `EventData`.
-
-Le rapport a été exporté vers :
+Le résultat a été exporté dans :
 
 ```text
 C:\CyberLab\SecurityLogs\FailedLogons_Analysis.csv
 ```
 
+Des événements locaux ont notamment été observés avec `127.0.0.1`, tandis que des événements de type `LogonType 3` ont été observés depuis `192.168.100.20`.
+
 ### Logon Type 3
 
-Le `LogonType = 3` correspond à une ouverture de session de type **Network**.
+Le `LogonType 3` correspond à une authentification de type **Network**.
 
-Dans le contexte du Lab, cela permet notamment d'identifier des tentatives d'authentification provenant d'une autre machine ou d'un accès réseau à une ressource Windows.
+Dans le contexte du Lab, cette information permet de distinguer les authentifications réseau des ouvertures de session locales et d'orienter la détection vers les tentatives d'accès réseau.
 
-Cela est particulièrement intéressant pour l'analyse de :
-
-- SMB ;
-- accès réseau ;
-- authentification Windows ;
-- mouvements latéraux ;
-- comportements suspects sur le réseau.
-
-### Exemple observé
-
-```text
-SourceIP       LogonType
-192.168.100.20 3
-```
-
-Une autre information observée concernait des tentatives locales sur `DC01` avec :
-
-```text
-127.0.0.1
-```
-
-Ces événements ont été distingués des authentifications réseau afin de ne pas mélanger les deux types de comportements.
-
-### Capture
-
-![Failed Logons Analysis](screenshots/08_Failed_Logons_Analysis.png)
+![Failed Logons Analysis](screenshots/11_Failed_Logons_Analysis.png)
 
 ---
 
-## 12. Detection Logic
+## 13. Detection Engineering with PowerShell
 
-Une première logique de détection a été développée avec PowerShell.
+Une première logique de détection a été développée afin d'identifier plusieurs échecs d'authentification réseau provenant d'une même adresse IP.
 
-L'objectif était d'identifier plusieurs échecs d'authentification réseau provenant de la même adresse IP.
-
-La logique appliquée :
+La logique appliquée est :
 
 ```text
-Event ID = 4625
-        |
-        v
+Event ID 4625
+       |
+       v
 LogonType = 3
-        |
-        v
-SourceIP != 127.0.0.1
-        |
-        v
-Group by SourceIP
-        |
-        v
+       |
+       v
+SourceIP disponible
+       |
+       v
+Exclusion de 127.0.0.1
+       |
+       v
+Groupement par SourceIP
+       |
+       v
 Count >= 2
-        |
-        v
+       |
+       v
 Security Alert
 ```
 
-Le script a généré l'alerte suivante :
+Le script a détecté :
 
 ```text
-SourceIP       FailedAttempts   Alert
-192.168.100.20 2                Multiple network authentication failures
+SourceIP       FailedAttempts
+192.168.100.20 2
 ```
 
-Cette logique constitue une première approche de détection permettant de transformer des événements bruts en information exploitable par un analyste.
+avec :
+
+```text
+Multiple network authentication failures
+```
+
+Cette logique constitue une première approche de Detection Engineering à partir des Windows Security Logs.
+
+![PowerShell Security Detection](screenshots/12_PowerShell_Security_Detection.png)
 
 ---
 
-## 13. Automated Security Alert
+## 14. Automated Security Alert
 
-Les alertes ont été exportées automatiquement :
+Les alertes ont été exportées automatiquement dans :
+
+```text
+C:\CyberLab\SecurityLogs\Alerts.csv
+```
+
+Export :
 
 ```powershell
 $Alerts |
@@ -587,186 +592,293 @@ Export-Csv "C:\CyberLab\SecurityLogs\Alerts.csv" `
 -Encoding UTF8
 ```
 
-Le fichier obtenu :
+Contenu obtenu :
 
 ```text
-C:\CyberLab\SecurityLogs\Alerts.csv
+"SourceIP","FailedAttempts","Alert"
+"192.168.100.20","2","Multiple network authentication failures"
 ```
 
-Contenu :
+Cette étape transforme les événements bruts en résultat exploitable pour un analyste sécurité.
 
-```text
-SourceIP,FailedAttempts,Alert
-192.168.100.20,2,Multiple network authentication failures
-```
-
-Cette étape démontre le passage :
-
-**Windows Event Logs → PowerShell Parsing → Filtering → Aggregation → Detection → Alert**
-
-### Capture
-
-![PowerShell Security Alert](screenshots/09_PowerShell_Security_Alert.png)
+![Security Alert](screenshots/13_Security_Alert.png)
 
 ---
 
-## 14. Security Monitoring Workflow
+## 15. Security Monitoring Workflow
 
-Le workflow final du Lab peut être résumé ainsi :
+Le workflow développé dans le Lab peut être résumé ainsi :
 
 ```text
-Windows Security Events
-          |
-          v
-      Event ID 4625
-          |
-          v
-      PowerShell
-          |
-          v
-      XML Parsing
-          |
-          v
-   Structured CSV Data
-          |
-          v
- Filtering / Grouping
-          |
-          v
- Detection Logic
-          |
-          v
-     Security Alert
-          |
-          v
-       Alerts.csv
+Windows Security Logs
+        |
+        v
+Event ID 4625
+        |
+        v
+PowerShell
+        |
+        v
+XML Parsing
+        |
+        v
+Structured Data
+        |
+        v
+Filtering
+        |
+        v
+Source IP Grouping
+        |
+        v
+Detection Rule
+        |
+        v
+Security Alert
+        |
+        v
+CSV Reporting
 ```
 
-Cette partie permet de mettre en pratique plusieurs concepts utilisés dans les environnements SOC :
+Cette partie permet de travailler concrètement sur :
 
-- event collection ;
-- log parsing ;
-- event filtering ;
-- authentication monitoring ;
-- source IP analysis ;
-- detection logic ;
-- alert generation ;
-- basic detection engineering ;
-- PowerShell automation.
+- Security Logging ;
+- Log Analysis ;
+- Authentication Monitoring ;
+- Detection Engineering ;
+- Security Automation ;
+- Alert Generation.
 
 ---
 
-## 15. Skills Demonstrated
+## 16. Security Validation
 
-### Windows & Active Directory
+Une fois les composants configurés et les mesures de sécurité appliquées, leur état a été vérifié avec PowerShell et les outils natifs de Windows.
 
-- Windows Server administration
+Les contrôles réalisés ont notamment porté sur :
+
+- Active Directory ;
+- Organizational Units ;
+- Group Policy ;
+- Password Policy ;
+- Account Lockout Policy ;
+- group memberships ;
+- privileged groups ;
+- Separation of Duties ;
+- Windows Defender Firewall ;
+- SMB configuration ;
+- SMB Signing ;
+- Windows Services ;
+- Print Spooler ;
+- WinRM ;
+- listening ports ;
+- Security Event Logs ;
+- authentication failures.
+
+La démarche retenue est :
+
+**Configuration → Validation → Analyse → Recommandation**
+
+---
+
+## 17. Security Findings & Recommendations
+
+### Active Directory & IAM
+
+- contrôler régulièrement les memberships des groupes privilégiés ;
+- appliquer le principe du moindre privilège ;
+- maintenir une séparation claire des rôles ;
+- revoir régulièrement les comptes et groupes sensibles.
+
+### Group Policy
+
+- centraliser les Password Policy et Account Lockout Policy ;
+- maintenir les politiques de sécurité des postes clients ;
+- contrôler régulièrement les GPO liées au domaine ;
+- vérifier les changements de configuration.
+
+### SMB
+
+- maintenir SMBv1 désactivé ;
+- maintenir SMB Signing activé et requis ;
+- limiter les accès SMB aux utilisateurs et machines autorisés.
+
+### Windows Defender Firewall
+
+- limiter les règles aux flux nécessaires ;
+- revoir régulièrement les règles d'administration distante ;
+- éviter les sources inutilement larges.
+
+### WinRM
+
+Le Lab a montré qu'un listener WinRM est actif sur TCP/5985 et que les règles Firewall associées doivent être considérées comme une surface d'administration distante.
+
+Recommandations :
+
+- limiter WinRM aux sources d'administration nécessaires ;
+- contrôler régulièrement les règles Firewall associées ;
+- éviter une exposition plus large que nécessaire.
+
+### Security Monitoring
+
+- conserver les événements de sécurité importants ;
+- surveiller les échecs d'authentification ;
+- corréler les événements provenant d'une même source ;
+- étendre progressivement les règles de détection.
+
+---
+
+## 18. Skills Demonstrated
+
+### Active Directory & IAM
+
 - Active Directory Domain Services
-- Active Directory users and groups
-- Group membership management
-- Privileged group analysis
+- Domain administration
+- Organizational Units
+- Group Policy
+- User and Group Management
+- Privileged Groups
 - IAM fundamentals
-- Windows authentication
+- Least Privilege
+- Separation of Duties
+- Password Policy
+- Account Lockout Policy
 
-### Security Engineering
+### Windows Security
 
-- Windows Server Hardening
-- SMB security
-- SMB signing
+- Windows Server Security
 - Windows Defender Firewall
-- Network exposure analysis
-- Remote administration security
-- Service security review
+- SMB Security
+- SMBv1 Hardening
+- SMB Signing
+- Windows Services Review
+- Print Spooler Security Review
+- WinRM Security
+- Remote Administration Security
 
-### SOC & Detection
+### Security Monitoring & Detection
 
 - Windows Security Event Logs
-- Event ID 4625 analysis
+- Event ID 4625
 - Logon Type analysis
 - Network authentication monitoring
 - Source IP analysis
-- Detection logic
+- Detection rules
 - Alert generation
 
 ### Automation
 
 - PowerShell
-- Windows Event Log querying
 - XML event parsing
+- Security log extraction
 - CSV reporting
-- Automated filtering and aggregation
+- Automated filtering
+- Event grouping
 - Security alert generation
 
 ---
 
-## 16. Repository Structure
+## 19. Repository Structure
 
 ```text
-Windows-Server-AD-Security-Lab/
+Windows-Security-Assessment-Active-Directory-Hardening-Lab/
 │
 ├── README.md
 │
 ├── screenshots/
-│   ├── 01_ActiveDirectory_Groups.png
-│   ├── 02_SMB_Security_Configuration.png
-│   ├── 03_Windows_Defender_Firewall.png
-│   ├── 04_Windows_Services_Review.png
-│   ├── 05_Print_Spooler_Review.png
-│   ├── 06_WinRM_Security_Review.png
-│   ├── 07_Security_Events_4625.png
-│   ├── 08_Failed_Logons_Analysis.png
-│   └── 09_PowerShell_Security_Alert.png
+│   ├── 01_ActiveDirectory_OUs.png
+│   ├── 02_Group_Policy_Configuration.png
+│   ├── 03_Password_Account_Lockout_Policy.png
+│   ├── 04_ActiveDirectory_Privileged_Groups.png
+│   ├── 05_Separation_of_Duties.png
+│   ├── 06_SMB_Security_Configuration.png
+│   ├── 07_Windows_Defender_Firewall.png
+│   ├── 08_Windows_Services_Review.png
+│   ├── 09_Print_Spooler_Review.png
+│   ├── 10_WinRM_Security_Review.png
+│   ├── 11_Failed_Logons_Analysis.png
+│   ├── 12_PowerShell_Security_Detection.png
+│   └── 13_Security_Alert.png
 │
-└── SecurityLogs/
-    ├── FailedLogons.csv
-    ├── FailedLogons_Analysis.csv
-    └── Alerts.csv
+├── SecurityLogs/
+│   ├── FailedLogons.csv
+│   ├── FailedLogons_Analysis.csv
+│   └── Alerts.csv
+│
+└── scripts/
+    └── SecurityMonitoring/
 ```
 
 ---
 
-## 17. Project Outcome
+## 20. Project Outcome
 
-Ce Lab montre une démarche complète allant de la construction d'un environnement Windows à la mise en place de contrôles de sécurité et d'une première capacité de détection.
-
-Le projet combine :
+Ce Lab m'a permis de travailler sur l'ensemble du cycle de sécurisation d'un environnement Windows/Active Directory :
 
 ```text
-Infrastructure
-      ↓
-Active Directory
-      ↓
-IAM / Privileges
-      ↓
+Build
+  ↓
+Active Directory Deployment
+  ↓
+Users / Groups / OUs
+  ↓
+Group Policy
+  ↓
+IAM / Privileged Access
+  ↓
+Security Configuration
+  ↓
 Hardening
-      ↓
-Network Security
-      ↓
+  ↓
+Validation
+  ↓
 Security Logging
-      ↓
-PowerShell Analysis
-      ↓
+  ↓
 Detection
-      ↓
-Alerting
+  ↓
+PowerShell Automation
+  ↓
+Security Recommendations
 ```
 
-L'intérêt principal du projet est de montrer une approche pratique de la cybersécurité : les composants ont été configurés et manipulés dans le Lab, puis vérifiés et analysés afin de comprendre leur niveau de sécurité et leur comportement.
+L'intérêt principal du projet est d'avoir réalisé et configuré l'environnement avant de procéder aux phases d'assessment et de validation.
+
+Le Lab démontre ainsi à la fois des compétences de configuration et d'administration et des compétences de cybersécurité :
+
+- construire un environnement ;
+- configurer les identités et les politiques ;
+- appliquer des mesures de hardening ;
+- contrôler les privilèges ;
+- vérifier la configuration ;
+- analyser les événements ;
+- automatiser une détection ;
+- documenter les résultats.
 
 ---
 
-## 18. Relevance to Cybersecurity Roles
+## 21. Relevance to Cybersecurity Roles
 
-Les compétences développées dans ce projet sont directement transposables à plusieurs missions junior en cybersécurité :
+Les compétences développées dans ce projet peuvent être transposées à plusieurs missions junior :
+
 
 - Security Analyst
 - Windows Security
 - Active Directory Security
 - IAM Analyst
-- Vulnerability Management
 - Security Operations
 - Security Engineering
 - Detection Engineering
 - SOC Analyst
 - Cybersecurity Consulting
 
+---
+
+## Conclusion
+
+Ce projet met en pratique la sécurisation d'un environnement Windows Server et Active Directory, depuis la construction et la configuration de l'infrastructure jusqu'au hardening, à la validation, au Security Monitoring, à la détection et à l'automatisation.
+
+Le Lab combine :
+
+**Active Directory → IAM → Group Policy → Hardening → Security Validation → Security Logging → Detection → PowerShell Automation**
+
+Il constitue une base pratique pour les domaines de la sécurité des systèmes, de l'IAM, du SOC, de la Security Engineering et de la Detection Engineering.
