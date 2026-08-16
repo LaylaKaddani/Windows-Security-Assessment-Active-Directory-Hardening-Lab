@@ -18,12 +18,14 @@ Le projet couvre notamment :
 - Group Policy
 - Password Policy et Account Lockout
 - Windows Server Hardening
+- SMB Security
 - Windows Defender Firewall
 - Remote Administration Security
 - Security Logging
 - Authentication Monitoring
 - Detection Engineering
 - PowerShell Security Automation
+
 
 ---
 
@@ -99,12 +101,13 @@ Cette organisation permet de séparer les objets selon leur rôle et de facilite
 
 ## 3. Group Policy & Security Policies
 
-Les Group Policy Objects ont été utilisés pour mettre en place les politiques de sécurité du domaine.
+Les Group Policy Objects ont été créés et configurés pour mettre en place les politiques de sécurité du domaine.
 
 Parmi les GPO configurées et liées au domaine :
 
 ```text
 Politique de mots de passe et verrouillage des comptes
+Default Domain Policy
 Politique de sécurité des postes clients
 ```
 
@@ -135,7 +138,9 @@ Cette politique permet de travailler sur des contrôles tels que :
 
 Les valeurs exactes configurées dans la GPO doivent être documentées dans la capture de la stratégie réellement appliquée.
 
-![Password Policy and Account Lockout Policy](screenshots/03_Password_Account_Lockout_Policy.png)
+![Password Policy](screenshots/03_Password_Policy.png)
+
+![Account Lockout Policy](screenshots/04_Account_Lockout_Policy.png)
 
 ---
 
@@ -149,7 +154,6 @@ Des groupes distincts ont été utilisés pour séparer les rôles :
 GG_IT
 GG_IT_Admins
 GG_Direction
-...
 ```
 
 Les utilisateurs ont ensuite été associés aux groupes correspondant à leurs responsabilités.
@@ -253,7 +257,7 @@ Cette partie permet de travailler sur :
 
 ## 6. SMB Security
 
-Le protocole SMB a été vérifié dans le cadre du hardening.
+Le protocole SMB a été sécurisé puis vérifié dans le cadre du hardening.
 
 La configuration a été contrôlée avec :
 
@@ -289,7 +293,7 @@ Les mesures appliquées permettent de :
 
 Windows Defender Firewall a été configuré et vérifié comme composant majeur de la sécurité réseau du serveur.
 
-Les profils ont été contrôlés :
+Les profils ont été configurés puis vérifiés :
 
 ```powershell
 Get-NetFirewallProfile |
@@ -383,6 +387,8 @@ Les imprimantes présentes ont également été vérifiées :
 Get-Printer |
 Select-Object Name, Shared, Published
 ```
+
+Les imprimantes présentes dans le Lab n'étaient pas partagées ou publiées.
 
 Le service a donc été identifié comme un élément de surface d'attaque à évaluer, sans désactivation aveugle.
 
@@ -744,6 +750,8 @@ Recommandations :
 - Windows Server Security
 - Windows Defender Firewall
 - SMB Security
+- SMBv1 Hardening
+- SMB Signing
 - Windows Services Review
 - Print Spooler Security Review
 - WinRM Security
@@ -781,8 +789,8 @@ Windows-Security-Assessment-Active-Directory-Hardening-Lab/
 ├── screenshots/
 │   ├── 01_ActiveDirectory_OUs.png
 │   ├── 02_Group_Policy_Configuration.png
-│   ├── 03_Password_Account_Lockout_Policy.png
-│   ├── 04_ActiveDirectory_Privileged_Groups.png
+│   ├── 03_Password_Policy.png
+│   ├── 04_Account_Lockout_Policy.png
 │   ├── 05_Separation_of_Duties.png
 │   ├── 06_SMB_Security_Configuration.png
 │   ├── 07_Windows_Defender_Firewall.png
@@ -801,8 +809,6 @@ Windows-Security-Assessment-Active-Directory-Hardening-Lab/
 └── scripts/
     └── SecurityMonitoring/
 ```
-
----
 
 ## 20. Project Outcome
 
@@ -853,7 +859,6 @@ Le Lab démontre ainsi à la fois des compétences de configuration et d'adminis
 
 Les compétences développées dans ce projet peuvent être transposées à plusieurs missions junior :
 
-
 - Security Analyst
 - Windows Security
 - Active Directory Security
@@ -873,3 +878,5 @@ Ce projet met en pratique la sécurisation d'un environnement Windows Server et 
 Le Lab combine :
 
 **Active Directory → IAM → Group Policy → Hardening → Security Validation → Security Logging → Detection → PowerShell Automation**
+
+Il constitue une base pratique pour les domaines de la sécurité des systèmes, de l'IAM, du SOC, de la Security Engineering et de la Detection Engineering.
