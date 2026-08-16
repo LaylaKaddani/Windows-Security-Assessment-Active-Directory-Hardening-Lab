@@ -4,7 +4,7 @@
 
 Ce projet consiste en la construction, la configuration, la sécurisation et la supervision d'un environnement Windows Server basé sur Active Directory.
 
-Le projet a été réalisé progressivement dans un environnement de laboratoire isolé. L'objectif n'était pas uniquement d'observer une infrastructure existante, mais de construire et configurer les composants, de mettre en place des mécanismes de sécurité, de tester leur fonctionnement, puis d'ajouter des contrôles de journalisation, de détection et d'automatisation.
+Le projet a été réalisé progressivement dans un environnement de laboratoire isolé. L'objectif était de construire et configurer les composants, de mettre en place des mécanismes de sécurité, de tester leur fonctionnement, puis d'ajouter des contrôles de journalisation, de détection et d'automatisation.
 
 La démarche suivie est :
 
@@ -18,15 +18,12 @@ Le projet couvre notamment :
 - Group Policy
 - Password Policy et Account Lockout
 - Windows Server Hardening
-- SMB Security
 - Windows Defender Firewall
 - Remote Administration Security
 - Security Logging
 - Authentication Monitoring
 - Detection Engineering
 - PowerShell Security Automation
-
-> Ce dépôt concerne uniquement le laboratoire personnel. Les travaux réalisés dans le cadre du stage chez Alpamare, notamment Nmap, Nessus et PingCastle, sont conservés séparément.
 
 ---
 
@@ -108,7 +105,6 @@ Parmi les GPO configurées et liées au domaine :
 
 ```text
 Politique de mots de passe et verrouillage des comptes
-Default Domain Policy
 Politique de sécurité des postes clients
 ```
 
@@ -153,6 +149,7 @@ Des groupes distincts ont été utilisés pour séparer les rôles :
 GG_IT
 GG_IT_Admins
 GG_Direction
+...
 ```
 
 Les utilisateurs ont ensuite été associés aux groupes correspondant à leurs responsabilités.
@@ -256,7 +253,7 @@ Cette partie permet de travailler sur :
 
 ## 6. SMB Security
 
-Le protocole SMB a été sécurisé et vérifié dans le cadre du hardening.
+Le protocole SMB a été vérifié dans le cadre du hardening.
 
 La configuration a été contrôlée avec :
 
@@ -386,8 +383,6 @@ Les imprimantes présentes ont également été vérifiées :
 Get-Printer |
 Select-Object Name, Shared, Published
 ```
-
-Les imprimantes présentes dans le Lab n'étaient pas partagées ou publiées.
 
 Le service a donc été identifié comme un élément de surface d'attaque à évaluer, sans désactivation aveugle.
 
@@ -749,8 +744,6 @@ Recommandations :
 - Windows Server Security
 - Windows Defender Firewall
 - SMB Security
-- SMBv1 Hardening
-- SMB Signing
 - Windows Services Review
 - Print Spooler Security Review
 - WinRM Security
@@ -880,5 +873,3 @@ Ce projet met en pratique la sécurisation d'un environnement Windows Server et 
 Le Lab combine :
 
 **Active Directory → IAM → Group Policy → Hardening → Security Validation → Security Logging → Detection → PowerShell Automation**
-
-Il constitue une base pratique pour les domaines de la sécurité des systèmes, de l'IAM, du SOC, de la Security Engineering et de la Detection Engineering.
