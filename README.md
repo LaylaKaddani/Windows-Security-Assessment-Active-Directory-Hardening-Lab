@@ -107,7 +107,6 @@ Parmi les GPO configurées et liées au domaine :
 
 ```text
 Politique de mots de passe et verrouillage des comptes
-Default Domain Policy
 Politique de sécurité des postes clients
 ```
 
@@ -135,8 +134,6 @@ Cette politique permet de travailler sur des contrôles tels que :
 - seuil de verrouillage ;
 - durée de verrouillage ;
 - réinitialisation du compteur de verrouillage.
-
-Les valeurs exactes configurées dans la GPO doivent être documentées dans la capture de la stratégie réellement appliquée.
 
 ![Password Policy](screenshots/03_Password_Policy.png)
 
@@ -204,9 +201,6 @@ Select-Object Name, SamAccountName
 
 Résultat obtenu :
 
-```text
-Thomas Martin    Thomas.Martin
-```
 
 ![Privileged Active Directory Groups](screenshots/04_ActiveDirectory_Privileged_Groups.png)
 
@@ -257,7 +251,7 @@ Cette partie permet de travailler sur :
 
 ## 6. SMB Security
 
-Le protocole SMB a été sécurisé puis vérifié dans le cadre du hardening.
+Le protocole SMB a été vérifié.
 
 La configuration a été contrôlée avec :
 
@@ -388,7 +382,6 @@ Get-Printer |
 Select-Object Name, Shared, Published
 ```
 
-Les imprimantes présentes dans le Lab n'étaient pas partagées ou publiées.
 
 Le service a donc été identifié comme un élément de surface d'attaque à évaluer, sans désactivation aveugle.
 
@@ -779,36 +772,6 @@ Recommandations :
 
 ---
 
-## 19. Repository Structure
-
-```text
-Windows-Security-Assessment-Active-Directory-Hardening-Lab/
-│
-├── README.md
-│
-├── screenshots/
-│   ├── 01_ActiveDirectory_OUs.png
-│   ├── 02_Group_Policy_Configuration.png
-│   ├── 03_Password_Policy.png
-│   ├── 04_Account_Lockout_Policy.png
-│   ├── 05_Separation_of_Duties.png
-│   ├── 06_SMB_Security_Configuration.png
-│   ├── 07_Windows_Defender_Firewall.png
-│   ├── 08_Windows_Services_Review.png
-│   ├── 09_Print_Spooler_Review.png
-│   ├── 10_WinRM_Security_Review.png
-│   ├── 11_Failed_Logons_Analysis.png
-│   ├── 12_PowerShell_Security_Detection.png
-│   └── 13_Security_Alert.png
-│
-├── SecurityLogs/
-│   ├── FailedLogons.csv
-│   ├── FailedLogons_Analysis.csv
-│   └── Alerts.csv
-│
-└── scripts/
-    └── SecurityMonitoring/
-```
 
 ## 20. Project Outcome
 
