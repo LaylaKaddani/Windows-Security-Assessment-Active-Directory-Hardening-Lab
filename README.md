@@ -133,11 +133,9 @@ Get-ADPrincipalGroupMembership "Nicolas.Moreau" |
 Select-Object Name
 ```
 
-### Capture à ajouter
+### Capture
 
-```text
-01_ActiveDirectory_Groups.png
-```
+![Active Directory Groups](screenshots/01_ActiveDirectory_Groups.png)
 
 Insérer ici une capture montrant les groupes et les appartenances vérifiées avec PowerShell.
 
@@ -220,11 +218,9 @@ Cette configuration montre notamment :
 
 Le SMB signing permet d'améliorer l'intégrité des communications SMB en empêchant notamment qu'un attaquant puisse modifier silencieusement certains échanges.
 
-### Capture à ajouter
+### Capture
 
-```text
-02_SMB_Security_Configuration.png
-```
+![SMB Security Configuration](screenshots/02_SMB_Security_Configuration.png)
 
 ---
 
@@ -266,11 +262,9 @@ Une attention particulière a été portée aux règles concernant :
 
 Cette analyse permet de relier la configuration du firewall aux rôles réellement assurés par le serveur.
 
-### Capture à ajouter
+### Capture
 
-```text
-03_Windows_Defender_Firewall.png
-```
+![Windows Defender Firewall](screenshots/03_Windows_Defender_Firewall.png)
 
 ---
 
@@ -306,11 +300,9 @@ Cette étape a notamment permis d'identifier les composants liés à :
 
 Le principe appliqué est de comparer les services actifs avec les fonctions réellement nécessaires au serveur, afin de réduire autant que possible la surface d'attaque sans casser les dépendances d'Active Directory.
 
-### Capture à ajouter
+### Capture
 
-```text
-04_Windows_Services_Review.png
-```
+![Windows Services Review](screenshots/04_Windows_Services_Review.png)
 
 ---
 
@@ -350,11 +342,9 @@ Aucune de ces imprimantes n'était partagée ou publiée.
 
 Cette vérification permet de distinguer la présence du service de l'existence effective de ressources d'impression partagées.
 
-### Capture à ajouter
+### Capture
 
-```text
-05_Print_Spooler_Review.png
-```
+![Print Spooler Review](screenshots/05_Print_Spooler_Review.png)
 
 ---
 
@@ -443,11 +433,9 @@ Cette phase a permis d'identifier précisément :
 - les profils concernés ;
 - la surface d'administration distante exposée.
 
-### Capture à ajouter
+### Capture
 
-```text
-06_WinRM_Security_Review.png
-```
+![WinRM Security Review](screenshots/06_WinRM_Security_Review.png)
 
 ---
 
@@ -485,11 +473,9 @@ Le fichier généré a été vérifié :
 C:\CyberLab\SecurityLogs\FailedLogons.csv
 ```
 
-### Capture à ajouter
+### Capture
 
-```text
-07_Security_Events_4625.png
-```
+![Security Event ID 4625](screenshots/07_Security_Events_4625.png)
 
 ---
 
@@ -546,11 +532,9 @@ Une autre information observée concernait des tentatives locales sur `DC01` ave
 
 Ces événements ont été distingués des authentifications réseau afin de ne pas mélanger les deux types de comportements.
 
-### Capture à ajouter
+### Capture
 
-```text
-08_Failed_Logons_Analysis.png
-```
+![Failed Logons Analysis](screenshots/08_Failed_Logons_Analysis.png)
 
 ---
 
@@ -620,11 +604,9 @@ Cette étape démontre le passage :
 
 **Windows Event Logs → PowerShell Parsing → Filtering → Aggregation → Detection → Alert**
 
-### Capture à ajouter
+### Capture
 
-```text
-09_PowerShell_Security_Alert.png
-```
+![PowerShell Security Alert](screenshots/09_PowerShell_Security_Alert.png)
 
 ---
 
@@ -785,5 +767,6 @@ Les compétences développées dans ce projet sont directement transposables à 
 - Security Operations
 - Security Engineering
 - Detection Engineering
-- Cybersecurity Consulting
 - SOC Analyst
+- Cybersecurity Consulting
+
